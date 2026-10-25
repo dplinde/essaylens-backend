@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from app.config import settings
 
 settings.anthropic_api_key = None
+from app.config import Settings
 from app.db import Base, close_db_connections, engine
 from app.main import app
 
@@ -21,6 +22,18 @@ ESSAY = (
     "Therefore, governments must invest in renewable energy, and individuals should reduce their emissions. "
     "In conclusion, decisive action now will protect future generations from the worst consequences of a warming planet."
 )
+
+
+@pytest.mark.parametrize(
+    ("database_url", "expected"),
+    [
+        ("postgres://user:password@host:5432/db", "postgresql+psycopg://user:password@host:5432/db"),
+        ("postgresql://user:password@host:5432/db", "postgresql+psycopg://user:password@host:5432/db"),
+        ("sqlite:///./essaylense.db", "sqlite:///./essaylense.db"),
+    ],
+)
+def test_database_url_normalization(database_url, expected):
+    assert Settings(database_url=database_url).database_url == expected
 
 
 @pytest.fixture(scope="module")
